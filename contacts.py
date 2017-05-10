@@ -1,5 +1,4 @@
-
-
+import csv
 
 class Contact:
 
@@ -17,6 +16,7 @@ class ContactBook:
     def add(self, name, phone, email):
         contact = Contact(name, phone, email)
         self._contacts.append(contact)
+        self._save()
 
     def _print_contact(self, contact):
         print('--- * --- * --- * --- * --- * --- * --- * ---')
@@ -38,11 +38,20 @@ class ContactBook:
         else:
             self._not_found()
 
+    def _save(self):
+        with open('contacts.csv', 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow( ('name', 'phone', 'email') )
+
+            for contact in self._contacts:
+                writer.writerow( (contact.name, contact.phone, contact.email) )
+
     def delete(self, name):
         # con enumerate obtenemos el indice del contacto, ademas del contacto en si
         for i, contact in enumerate(self._contacts):
             if contact.name.lower() == name.lower():
                 del self._contacts[i]
+                self._save()
                 break
         # si el ciclo se ejecuta y no encuentra el nombre
         else:
@@ -57,6 +66,14 @@ class ContactBook:
 def run():
 
     contact_book = ContactBook()
+
+    with open('contacts.csv', 'r') as f:
+        reader = csv.reader(f)
+        for i, row in enumerate(reader):
+            if i == 0:
+                continue
+
+            contact_book.add(row[0], row[1], row[2])
 
     while True:
         command = str(input('''
@@ -76,9 +93,6 @@ def run():
             email = str(input('Escribe el email del contacto: '))
 
             contact_book.add(name, phone, email)
-
-        elif command == 'ac':
-            print('actualizar contacto')
 
         elif command == 'b':
             name = str(input('Escribe el nombre del contacto: '))
